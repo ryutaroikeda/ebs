@@ -1,0 +1,8 @@
+# These files are text files and should be normalized (that is, convert CRLF
+# line endings to LF).
+
+*.php text
+*.sh text
+*.txt text
+*.md text
+makefile text

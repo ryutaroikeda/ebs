@@ -1,0 +1,44 @@
+Specifications for ebs - The Evidence-Based Scheduler
+=====================================================
+
+ryutaroikeda94@gmail.com
+
+
+Disclaimer
+----------
+
+This specification is incomplete and subject to change.
+
+
+Overview
+--------
+
+This tool records the estimated and actual times for tasks, and uses the record
+to provide evidence-based predictions for time to complete new tasks.
+
+
+Features
+--------
+
+One tool for taking measurements of tasks, another tool for using measuroements
+to make predictions.
+
+Problem: we type a command to start a task. But how do we make sure we stop it?
+It's okay to include interruptions, etc. But it needs to stop when the computer
+is switched off. Do we want a daemon? Rather avoid it, but are there
+alternatives? The solution is to have the daemon touch some file. The time of
+last read can be used to approximate when the computer was last on. What if the
+computer is left on? ...
+
+Human error is going to be inevitable. Unless a task can be linked directly
+with the task itself. Is a git commit a task? If we still have human error, I
+think the tool achieves nothing. Maybe we can do stuff within git / bash to
+hook into this tool. In git, the name of the task is the branch, and it is
+completed when it is merged into master. This isn't quite right.
+
+The process of making software goes like this:
+talk to client, write a functional spec, write a technical spec, create
+schedule, write software and test, deploy, then run.
+
+Problems: verifying that functional spec is covered by the technical spec, and
+by code, estimating schedule based on technical spec.
