@@ -18,8 +18,6 @@ TESTSCRIPT=tests/runtests.sh
 
 all: $(DEPENDENCIES) $(TARGET) tests
 
-.PHONY: dev release build tests trace clean
-
 dev: CFLAGS=-g -Wextra -Wall -pedantic -Werror -Isrc $(OPTFLAGS)
 dev: all
 
@@ -57,6 +55,8 @@ valgrind:
 
 tags:
 	ctags -R
+
+.PHONY: dev release build tests trace clean tags
 
 ifeq (,$(filter $(MAKECMDGOALS),clean))
 -include $(DEPENDENCIES)

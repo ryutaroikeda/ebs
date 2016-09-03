@@ -41,7 +41,11 @@ float compute_error(const struct data* data, const struct vector* model,
   return error;
 }
 
-int main(const int argc, const char** argv) {
+struct vector compute_gradient(const struct data* data,
+		const struct vector* model) {
+}
+
+int main_linear_algebra(const int argc, const char** argv) {
   (void) argc;
   (void) argv;
 	struct vector model;
