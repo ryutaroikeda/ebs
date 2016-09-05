@@ -14,7 +14,7 @@ read_line(FILE* stream, struct string* line) {
 		if (EOF == next_char) {
 			break;
 		}
-		line->bytes[char_count] = next_char;
+		line->bytes[char_count] = (char) next_char;
 	}
 	line->length = char_count;
 	line->bytes[line->length] = '\0';

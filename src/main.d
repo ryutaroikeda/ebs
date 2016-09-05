@@ -1,1 +1,1 @@
-src/main.o: src/main.c src/task.h
+src/main.o: src/main.c src/monte_carlo.h

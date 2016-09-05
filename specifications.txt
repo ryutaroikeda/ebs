@@ -24,3 +24,133 @@ To do:
 * Concurrent tasks
 * Monte Carlo simulation
 
+
+Random
+------
+
+Don't want to depend on Google Calendar.
+Want a simple calendar. We just put
+1. rules for when a developer is out of work
+2. particular days off (e.g. holidays, sick leave)
+
+Time sheets can be kept manually, just as I keep the ledger manually.
+Just want simple tools.
+
+We need several files, or maybe just one file
+
+time sheet for recording time use
+calendar sheet for recording when we are and aren't available for work
+
+symbols:
+
+we have users, tasks, sessions, and calendar rules. We only need rules to apply
+to days (not hours).
+
+Rather have the database in the repository so that results of scheduler are
+reproducible.
+
+Take a list of users, tasks, historical tasks, calendar, and sessions.
+These can all be in one file. So what's the syntax? What's the output? A
+probability distribution for completion of all tasks. Want this to be a spec.
+So I can write the technical spec and have this generate a schedule for me.
+
+Schedule ~= technical spec.
+
+Tag features with priority. Can simulate schedules without features below
+certain priority. Features ~= bugs? Have priority and severity, i.e. if feature
+doesn't exist, how bad would it be to the user?
+
+Severity:
+Critical - no work arounds and is preventing people from finishing task.
+Major - pretty bad, but work around exists for finishing task.
+Minor - just annoying, people can finish task.
+Trivial - typos, visuals, etc.
+
+Feature requests
+design error - we got the spec wrong
+
+Severity and priority should be one thing? We only need ordering for estimating
+schedules.
+
+Bug properties
+customer: severity, frequency
+developer: cost, risk
+
+Syntax of the features / bugs / technical spec database
+
+namespace_name {
+	up_to_n_nested_namespace {
+
+	}
+}
+
+{
+	"my project" : {
+		"users": [
+			{
+				"name": "ryutaro"
+			}
+		],
+		"tasks": [
+			{
+				"name": "my task",
+				"status": "open",
+				"assignee": "ryutaro",
+				"severity": "critical",
+				"estimate": 10
+			}
+		],
+		"sessions": [
+			{
+				"task_name": "my task",
+				"time_spent": 5
+			},
+			{
+				"task_name": "my task",
+				"begin": "8.00",
+				"end": "9.45"
+			}
+		]
+	}
+}
+
+{
+	"users": [
+		{
+			"name": "ryutaro"
+		}
+	],
+}
+
+This needs to be easy to integrate with bug tracking software.
+The data can come from some arbitrary source. But we want a canonical
+representation.
+
+Constraints:
+Follow NASA's guidelines.
+No dependencies.
+
+namespace, user, task, session, calendar
+
+Can keep clock running at all times, so forgetting to stop tasks isn't a
+problem? Bug database can already track time for bugs, so use that for
+features. If someone else is already tracking the data, we just need the
+calendar and database. Time tracking is extra.
+
+Simulation is independent from calendar schedule.
+
+Calendar schedule rules.
+Have an ordered list of inclusion and exclusion rules.
+Blank file => exclude everything.
+
+One calendar file per user? No.
+
+
+
+{ tasks, users, sessions } -> predicted hours of tasks
+
+{ calendar, users } -> convert hours to work day. Specify which hours of the
+day are available to use for tasks, e.g. 9 to 5 from Monday to Friday, except
+holidays.
+
+From calendar, need to know number of hours available on given day.

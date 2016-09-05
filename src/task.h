@@ -27,7 +27,7 @@ struct string {
 };
 
 struct task {
-	int task_id;
+	size_t task_id;
 	struct string name;
 	int estimated_time;
 	int predicted_time;

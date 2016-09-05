@@ -1,7 +1,9 @@
 DEBUGGER=valgrind
-CFLAGS=-g -std=c99 -Wextra -Wall -pedantic -Werror -Wshadow -Wpointer-arith \
--Isrc $(OPTFLAGS) 
-LIBS=$(OPTLIBS)
+CFLAGS=-g -std=iso9899:1999 -Wextra -Wall -pedantic -Werror -Wshadow \
+	-Wpointer-arith -Wcast-qual -Wstrict-prototypes \
+	-Wmissing-prototypes -Wconversion \
+	-Isrc $(OPTFLAGS) 
+LIBS=-lm $(OPTLIBS)
 
 SOURCES:=$(wildcard src/*.c)
 OBJECTS:=$(patsubst %.c,%.o,$(SOURCES))

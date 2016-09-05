@@ -1,52 +1,42 @@
-//#include "task.h"
-#include "linear_algebra.h"
+#include "monte_carlo.h"
+#include <math.h>
 #include <stdio.h>
 
+#define MAX_SIMULATIONS 100
 int
 main(int argc, char** argv) {
 	(void) argc;
 	(void) argv;
 
-	/*
-	const char src_path[] = "resources/foo.tsv";
-	const char dst_path[] = "resources/bar.tsv";
-	const char ses_path[] = "resources/baz.tsv";
-	const char ses_dst_path[] = "resources/alpha.tsv";
+	double velocities[] = {
+		0.1, 0.2, .4, .2, .4, .3
+	};
 
-	FILE* src = fopen(src_path, "rb");
-	FILE* dst = fopen(dst_path, "wb");
-	FILE* ses = fopen(ses_path, "rb");
-	FILE* ses_dst = fopen(ses_dst_path, "wb");
+	size_t length = sizeof(velocities) / sizeof(velocities[0]);
 
-	struct string buffer;
-	struct error error = read_line(file, &buffer);
+	double estimates [] = {
+		12, .5, 1
+	};
 
-	printf("%s\n", buffer.bytes);
+	size_t estimates_length = sizeof(estimates) / sizeof(estimates[0]);
 
-	struct task_array tasks;
-	struct session_array sessions;
+	double simulations[MAX_SIMULATIONS];
 
-	printf("reading %s\n", src_path);
-	struct error read_error = read_tasks(src, &tasks);
-	printf("error: %d\n", read_error.code);
+	simulate(velocities, length, estimates, estimates_length,
+			simulations, MAX_SIMULATIONS);
 
-	printf("writing %s\n", dst_path);
-	struct error write_error = write_tasks(dst, &tasks);
-	printf("error: %d\n", write_error.code);
+	size_t i;
+	for (i = 0; i < MAX_SIMULATIONS; i++) {
+		printf("%f\n", simulations[i]);
+	}
 
-	printf("reading %s\n", ses_path);
-	struct error ses_read_error = read_sessions(ses, &sessions);
-	printf("error: %d\n", ses_read_error.code);
+	double mean = compute_mean(simulations, MAX_SIMULATIONS);
+	double variance = compute_variance(simulations, MAX_SIMULATIONS);
+	double standard_deviation = sqrt(variance);
 
-	printf("writing %s\n", ses_dst_path);
-	struct error ses_write_error = write_sessions(ses_dst, &sessions);
-	printf("error: %d\n", ses_write_error.code);
-
-	fclose(src);
-	fclose(dst);
-	fclose(ses);
-	fclose(ses_dst);
-	*/
+	printf("mean: %f\n", mean);
+	printf("variance: %f\n", variance);
+	printf("standard deviation: %f\n", standard_deviation);
 
 	return 0;
 }
