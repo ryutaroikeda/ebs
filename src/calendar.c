@@ -7,19 +7,28 @@ enum {
 	max_buffer_length = 255
 };
 
-/* Parse a string in ISO-8601 format to calendar time. This depends on
- * strptime(). */
+/* Parse a string in ISO-8601 format to calendar time. */ 
 struct error
 parse_iso_8601_time(const char* const string, struct tm* const result) {
 	assert(NULL != string);
 	assert(NULL != result);
 
-	char* end = strptime(string, "%Y-%m-%dT%H:%M:%S", result);
 	struct error error;
-	if (NULL == end) {
+
+	const int expected_match_count = 6;
+	int match_count = sscanf(string, "%d-%2d-%2dT%2d:%2d:%2d",
+			&result->tm_year, &result->tm_mon, &result->tm_mday, &result->tm_hour,
+			&result->tm_min, &result->tm_sec);
+
+	if (expected_match_count != match_count) {
 		error.code = ERROR_BAD_TIME_STRING;
 		return error;
 	}
+
+	result->tm_year -= 1900;
+	result->tm_mon -= 1;
+
+	mktime(result);
 
 	error.code = ERROR_NONE;
 	return error;
