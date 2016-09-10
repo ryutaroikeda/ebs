@@ -1,1 +1,0 @@
-Assertion failed: (is_in_event(&date, &e)), function test_is_in_event, file tests/time_tests.c, line 69.

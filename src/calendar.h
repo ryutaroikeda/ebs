@@ -30,7 +30,7 @@ struct calendar {
 	size_t exclusions_length;
 };
 
-void
+struct error
 add_time(const struct tm*, const struct tm*, struct tm*);
 
 void

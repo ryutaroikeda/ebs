@@ -8,7 +8,8 @@ enum {
 };
 
 /* Parse a string in ISO-8601 format to calendar time. Changes the timezone to
- * the local timezone as a side-effect. */ 
+ * the local timezone as a side-effect. If the time is not within a valid range
+ * (1902 to 2038 on some environments), ERROR_INVALID_TIME is returned. */ 
 struct error
 parse_iso_8601_time(const char* const string, struct tm* const result) {
   assert(NULL != string);
@@ -32,7 +33,11 @@ parse_iso_8601_time(const char* const string, struct tm* const result) {
   result->tm_wday = 0;
   result->tm_isdst = -1;
 
-  mktime(result);
+  /* Try to normalize the time. */
+  if (((time_t) -1) == mktime(result)) {
+    error.code = ERROR_INVALID_TIME;
+    return error;
+  }
 
   error.code = ERROR_NONE;
   return error;
@@ -40,7 +45,7 @@ parse_iso_8601_time(const char* const string, struct tm* const result) {
 
 /* Add two dates and normalize the result. Changes the timezone to the local
  * timezone as a side-effect. */
-void
+struct error
 add_time(const struct tm* const first, const struct tm* const second,
     struct tm* const result) {
   assert(NULL != first);
@@ -55,7 +60,14 @@ add_time(const struct tm* const first, const struct tm* const second,
   result->tm_wday = 0;
   result->tm_yday = 0;
   result->tm_isdst = -1;
-  mktime(result);
+  
+  struct error error;
+  if ((time_t) -1 == mktime(result)) {
+    error.code = ERROR_INVALID_TIME;
+    return error;
+  }
+  error.code = ERROR_NONE;
+  return error;
 }
 
 void
