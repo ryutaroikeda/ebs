@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <time.h>
 
-#define BUFFER 1023
+enum {
+  max_buffer_length = 1023
+};
 
 void
 test_parser_errors_for_invalid_input(void);
@@ -30,10 +32,10 @@ void test_parser_errors_for_invalid_input(void) {
 void
 test_parser(void) {
 	char date_string[] = "1800-02-3T13:01:31";
-	char buffer[BUFFER + 1];
+	char buffer[max_buffer_length + 1];
 	struct tm time;
 	struct error error = parse_iso_8601_time(date_string, &time);
-	strftime(buffer, BUFFER, "%c\n", &time);
+	strftime(buffer, max_buffer_length, "%c\n", &time);
 	printf("%s", buffer);
 
 	assert(ERROR_NONE == error.code);
@@ -49,12 +51,7 @@ test_parser(void) {
 void
 test_is_in_event(void) {
 	struct event e;
-	e.start.tm_year = 0;
-	e.start.tm_mon = 0;
-	e.start.tm_mday = 1;
-	e.start.tm_hour = 0;
-	e.start.tm_min = 0;
-	e.start.tm_sec = 0;
+  parse_iso_8601_time("1900-01-01T00:00:00", &e.start);
 	e.period.tm_year = 0;
 	e.period.tm_mon = 0;
 	e.period.tm_mday = 1;
@@ -64,12 +61,7 @@ test_is_in_event(void) {
 	e.repetition = 32;
 
 	struct tm date;
-	date.tm_year = 0;
-	date.tm_mon = 1;
-	date.tm_mday = 1;
-	date.tm_hour = 10;
-	date.tm_min = 0;
-	date.tm_sec = 0;
+  parse_iso_8601_time("1900-02-01T10:00:00", &date);
 
 	assert(is_in_event(&date, &e));
 

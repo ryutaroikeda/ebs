@@ -58,6 +58,10 @@ valgrind:
 tags:
 	ctags -R
 
+clean:
+	rm $(OBJECTS)
+	rm $(TESTOBJECT)
+
 .PHONY: dev release build tests trace clean tags
 
 ifeq (,$(filter $(MAKECMDGOALS),clean))

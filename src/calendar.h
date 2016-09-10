@@ -1,7 +1,6 @@
 #ifndef _ebs_calendar_h_
 #define _ebs_calendar_h_
 
-#define _XOPEN_SOURCE
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
