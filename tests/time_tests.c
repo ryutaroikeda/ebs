@@ -95,33 +95,15 @@ test_completion_date(void) {
 	struct tm sunday_date;
 	parse_iso_8601_time("2016-09-11T12:12:12", &sunday_date);
 
-	struct tm daily_period = {
-		.tm_year = 0,
-		.tm_mon = 0,
-		.tm_mday = 1,
-		.tm_hour = 0,
-		.tm_min = 0,
-		.tm_sec = 0
-	};
-
-	struct tm weekly_period = {
-		.tm_year = 0,
-		.tm_mon = 0,
-		.tm_mday = 7,
-		.tm_hour = 0,
-		.tm_min = 0,
-		.tm_sec = 0
-	};
-
 	struct event work = {
 		.start = start,
-		.period = daily_period,
+		.period = DAY,
 		.repetition = 10
 	};
 
 	struct event sunday = {
 		.start = sunday_date,
-		.period = weekly_period,
+		.period = WEEK,
 		.repetition = 10
 	};
 
@@ -130,8 +112,8 @@ test_completion_date(void) {
 	add_inclusion(&work, &calendar);
 	add_exclusion(&sunday, &calendar);
 
-	uint64_t work_per_day = 100;
-	uint64_t total_work = 400;
+	int64_t work_per_day = 100;
+	int64_t total_work = 400;
 
 	struct tm completion_date;
 	struct error error = compute_completion_date(&start, &calendar, work_per_day,

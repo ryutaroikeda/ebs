@@ -4,33 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*
-void
-bubble_sort(double*, const size_t);
-*/
-
-/* Sort an array of doubles in-place. */
-/*
-void
-bubble_sort(double* array, const size_t length) {
-	assert(NULL != array);
-	size_t done_count;
-	size_t array_index;
-	for (done_count = 0; done_count < length - 1; done_count++) {
-		for (array_index = 0; array_index < length - done_count - 1;
-				array_index++) {
-			if (array[array_index] <= array[array_index + 1]) {
-				continue;
-			}
-			double tmp = array[array_index];
-			array[array_index] = array[array_index + 1];
-			array[array_index + 1] = tmp;
-		}
-	}
-}
-*/
-
-
 double
 simulate_completion_time(const double*, const size_t, const double*,
 		const size_t);
@@ -96,7 +69,7 @@ compute_mean(const double* measurements, const size_t measurements_length) {
 
 /* Compute the variance. */
 double
-compute_variance(const double* measurements,
+compute_variance(const double* const measurements,
 		const size_t measurements_length) {
 	assert(NULL != measurements);
 
@@ -104,17 +77,15 @@ compute_variance(const double* measurements,
 		return 0.0;
 	}
 
-	double mean_of_squares = 0.0;
-
-	size_t measurements_index;
+	const double mean = compute_mean(measurements, measurements_length);
+  double variance = 0.0;
+  size_t measurements_index;
 	for (measurements_index = 0; measurements_index < measurements_length;
 			measurements_index++) {
-		mean_of_squares += measurements[measurements_index] *
-			measurements[measurements_index];
-	}
-	mean_of_squares /= (double) measurements_length;
+    double deviation_from_mean = measurements[measurements_index] - mean;
+    variance += deviation_from_mean * deviation_from_mean;
+  }
 
-	double mean = compute_mean(measurements, measurements_length);
-	return (((double) measurements_length - 1) / (double) measurements_length) *
-		mean_of_squares - (mean * mean);
+  variance *= 1.0 / (measurements_length - 1);
+  return variance;
 }

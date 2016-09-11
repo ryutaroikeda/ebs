@@ -6,14 +6,30 @@
 #include <time.h>
 
 enum {
-	max_event_name_length = 255,
-	max_calendar_inclusions_length = 1023,
-	max_calendar_exclusions_length = 1023
+	MAX_EVENT_NAME_LENGTH = 255,
+	MAX_CALENDAR_INCLUSIONS_LENGTH = 1023,
+	MAX_CALENDAR_EXCLUSIONS_LENGTH = 1023,
+  MAX_CALENDAR_DAYS = 100000
 };
 
-enum rule_type {
-	include = 0,
-	exclude
+enum comparison {
+  COMPARISON_EQUAL,
+  COMPARISON_LESS_THAN,
+  COMPARISON_GREATER_THAN
+};
+
+extern const struct tm DAY;
+
+extern const struct tm WEEK;
+
+enum day_of_week {
+  SUNDAY,
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURSDAY,
+  FRIDAY,
+  SATURDAY
 };
 
 struct event {
@@ -24,23 +40,32 @@ struct event {
 };
 
 struct calendar {
-	struct event inclusions[max_calendar_inclusions_length];
-	struct event exclusions[max_calendar_exclusions_length];
+	struct event inclusions[MAX_CALENDAR_INCLUSIONS_LENGTH];
+	struct event exclusions[MAX_CALENDAR_EXCLUSIONS_LENGTH];
 	size_t inclusions_length;
 	size_t exclusions_length;
 };
 
 struct error
-add_time(const struct tm*, const struct tm*, struct tm*);
-
-void
-print_time(const struct tm*);
+parse_iso_8601_time(const char*, struct tm*);
 
 struct error
-parse_iso_8601_time(const char*, struct tm*);
+add_time(const struct tm*, const struct tm*, struct tm*);
+
+struct error
+add_days(const struct tm*, const int, struct tm*);
+
+enum comparison
+compare_time(const struct tm*, const struct tm*);
 
 bool
 is_same_date(const struct tm*, const struct tm*);
+
+struct error
+get_next_week(const struct tm*, const int, struct tm*);
+
+void
+print_time(const struct tm*);
 
 bool
 is_in_event(const struct tm*, const struct event*);
@@ -56,6 +81,6 @@ add_exclusion(const struct event*, struct calendar*);
 
 struct error
 compute_completion_date(const struct tm*, const struct calendar*,
-		uint64_t, uint64_t, struct tm*);
+		int64_t, int64_t, struct tm*);
 
 #endif
