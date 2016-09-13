@@ -27,7 +27,7 @@ release: CFLAGS=-g -O2 -Wextra -Wall -pedantic -Isrc -DNDEBUG $(OPTFLAGS)
 release: all
 
 $(TARGET): build $(OBJECTS)
-	$(CC) $(LIBS) -o $@ $(OBJECTS)
+	$(CC) -o $@ $(OBJECTS) $(LIBS) 
 
 build:
 	@mkdir -p bin
@@ -39,7 +39,7 @@ src/%.d: src/%.c
 
 
 $(TESTS): % : %.o $(subst $(TARGETMAIN),,$(OBJECTS))
-	$(CC) $(LIBS) -o $@ $< $(subst $(TARGETMAIN),,$(OBJECTS))
+	$(CC) -o $@ $< $(subst $(TARGETMAIN),,$(OBJECTS)) $(LIBS) 
 
 tests: $(TESTS)
 	sh ./$(TESTSCRIPT)
