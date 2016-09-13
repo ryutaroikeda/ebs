@@ -72,7 +72,7 @@ predict_completion_date(const struct task* const tasks, const size_t
       continue;
     }
     velocities[velocity_index] =
-      ((double) tasks[task_index].estimated_seconds) /
+      ((double) tasks[task_index].estimated_seconds) / (double)
       tasks[task_index].actual_seconds;
     if (isnan(velocities[velocity_index])) {
       continue;
