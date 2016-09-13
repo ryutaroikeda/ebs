@@ -86,6 +86,6 @@ compute_variance(const double* const measurements,
     variance += deviation_from_mean * deviation_from_mean;
   }
 
-  variance *= 1.0 / (measurements_length - 1);
+  variance *= 1.0 / (double) (measurements_length - 1);
   return variance;
 }
