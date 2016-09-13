@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 /* Read a tsv file of tasks. Each row has the task name, estimated time of
  * completion, and an optinal actual time of completion. Input time is in
@@ -26,7 +27,7 @@ read_time_sheet(const char* const filename, struct task* const tasks,
   size_t task_index = 0;
   size_t row_count;
   for (row_count = 0; row_count < max_task_length; row_count++) {
-    int matches_count = fscanf(fp, "%255s\t%lld%lld\n",
+    int matches_count = fscanf(fp, "%256s\t%" SCNd64 "\t%" SCNd64 "\n",
         tasks[task_index].name, &tasks[task_index].estimated_seconds,
         &tasks[task_index].actual_seconds);
     if (matches_count < 2) {
@@ -98,8 +99,9 @@ predict_completion_date(const struct task* const tasks, const size_t
       (SIGMA_LEVEL * standard_deviation));
 
   printf("std. dev: %f\n", standard_deviation);
-  printf("mean: %lld\n5%%: %lld\n95%%: %lld\n", mean_seconds_to_work,
-      five_percent_seconds_to_work, ninety_five_percent_seconds_to_work);
+  printf("mean: %" PRId64 "\n5%%: %" PRId64 "\n95%%: %" PRId64 "\n",
+      mean_seconds_to_work, five_percent_seconds_to_work,
+      ninety_five_percent_seconds_to_work);
 
   struct error error;
 
