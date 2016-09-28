@@ -6,9 +6,9 @@
 #include <time.h>
 
 enum {
-	MAX_EVENT_NAME_LENGTH = 255,
-	MAX_CALENDAR_INCLUSIONS_LENGTH = 1023,
-	MAX_CALENDAR_EXCLUSIONS_LENGTH = 1023,
+  MAX_EVENT_NAME_LENGTH = 255,
+  MAX_CALENDAR_INCLUSIONS_LENGTH = 1023,
+  MAX_CALENDAR_EXCLUSIONS_LENGTH = 1023,
   MAX_CALENDAR_DAYS = 100000
 };
 
@@ -33,17 +33,18 @@ enum day_of_week {
 };
 
 struct event {
-	struct tm start;
-	struct tm period;
-	uint64_t repetition;
-	//char name[max_event_name_length];
+  struct tm start;
+  struct tm end;
+  struct tm period;
+  uint64_t repetition;
+  //char name[max_event_name_length];
 };
 
 struct calendar {
-	struct event inclusions[MAX_CALENDAR_INCLUSIONS_LENGTH];
-	struct event exclusions[MAX_CALENDAR_EXCLUSIONS_LENGTH];
-	size_t inclusions_length;
-	size_t exclusions_length;
+  struct event inclusions[MAX_CALENDAR_INCLUSIONS_LENGTH];
+  struct event exclusions[MAX_CALENDAR_EXCLUSIONS_LENGTH];
+  size_t inclusions_length;
+  size_t exclusions_length;
 };
 
 struct error
@@ -81,6 +82,6 @@ add_exclusion(const struct event*, struct calendar*);
 
 struct error
 compute_completion_date(const struct tm*, const struct calendar*,
-		int64_t, int64_t, struct tm*);
+    int64_t, int64_t, struct tm*);
 
 #endif

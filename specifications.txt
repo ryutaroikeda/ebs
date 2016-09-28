@@ -20,9 +20,6 @@ to provide evidence-based predictions for time to complete new tasks.
 Features
 --------
 
-To do:
-* Concurrent tasks
-* Monte Carlo simulation
 
 
 Random
@@ -154,3 +151,21 @@ day are available to use for tasks, e.g. 9 to 5 from Monday to Friday, except
 holidays.
 
 From calendar, need to know number of hours available on given day.
+
+Want to parse user input calendar.
+
+Syntax of events
+
+<event> :=
+<calendar date> := <day of week> <time> | <date> <time>
+<day of week> := Monday | Tuesday | Wednesday | Thursday | Friday | Saturday |
+Sunday
+<date> = <YYYY>-<MM>-<DD>
+<time> := <hour>:<minute>:<second>
+
+
+Features
+----------
+
+Read calendar from config file.
+Regex.
