@@ -1,7 +1,9 @@
 #include "calendar.h"
+#include "ebs_time.h"
 #include "error.h"
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 void
@@ -31,7 +33,8 @@ test_parser_errors_for_invalid_input(void) {
 void
 test_parser(void) {
 	struct tm time;
-	struct error error = parse_iso_8601_time("1902-02-03T13:01:31", &time);
+  char s[] = "1902-02-03T13:01:31";
+	struct error error = parse_iso_8601_time(s, &time);
 
 	assert(ERROR_NONE == error.code);
 	assert(2 == time.tm_year);
@@ -40,6 +43,12 @@ test_parser(void) {
 	assert(13 == time.tm_hour);
 	assert(1 == time.tm_min);
 	assert(31 == time.tm_sec);
+
+  char buf[256];
+  error = format_iso_8601_time(&time, buf, 256);
+  printf("formatted %s, expected %s", buf, s);
+  assert(ERROR_NONE == error.code);
+  assert(0 == strcmp(s, buf));
 }
 
 /* Make sure adding time carries over. */

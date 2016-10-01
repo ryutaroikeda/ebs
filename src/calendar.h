@@ -47,8 +47,10 @@ struct calendar {
   size_t exclusions_length;
 };
 
+/*
 struct error
 parse_iso_8601_time(const char*, struct tm*);
+*/
 
 struct error
 add_time(const struct tm*, const struct tm*, struct tm*);

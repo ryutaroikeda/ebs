@@ -168,7 +168,6 @@ Features
 ----------
 
 Read calendar from config file.
-Regex.
 
 
 Simple regex
@@ -207,9 +206,29 @@ match(a, (b&c)
 match(a,!b)
 
 
-Simpler regex
+Simpler pattern expressions
 -------------
 
 ¬ | & no parentheses.
 We have a conjunctive normal form with string literals and their negation as
 terms. A string matches a term if it is a substring.
+
+
+Time Sheets and tasks
+--------------------------
+
+add <task-name> <estimate> Add an incomplete task to the tasks table.
+
+start <task-name> This will add an entry to the timesheet. The task should
+already exist in the tasks table.
+
+tick <task-name> This will mark the task as completed. Completed tasks are used
+to help make predictions more accurate. They don't count towards work time in
+predictions.
+
+untick <task-name> Mark the task as incomplete.
+
+list [filter] List all (incomplete) tasks matching the filter. Options to
+include completed tasks.
+
+

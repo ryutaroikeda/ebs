@@ -1,4 +1,5 @@
 #include "calendar.h"
+#include "ebs_time.h"
 #include "error.h"
 #include <assert.h>
 #include <stdio.h>
@@ -24,42 +25,6 @@ const struct tm WEEK = {
   .tm_min = 0,
   .tm_sec = 0
 };
-
-/* Parse a string in ISO-8601 format to calendar time. Changes the timezone to
- * the local timezone as a side-effect. If the time is not within a valid range
- * (1902 to 2038 on some environments), ERROR_INVALID_TIME is returned. */ 
-struct error
-parse_iso_8601_time(const char* const string, struct tm* const result) {
-  assert(NULL != string);
-  assert(NULL != result);
-
-  struct error error;
-
-  const int expected_match_count = 6;
-  int match_count = sscanf(string, "%d-%2d-%2dT%2d:%2d:%2d",
-      &result->tm_year, &result->tm_mon, &result->tm_mday, &result->tm_hour,
-      &result->tm_min, &result->tm_sec);
-
-  if (expected_match_count != match_count) {
-    error.code = ERROR_BAD_TIME_STRING;
-    return error;
-  }
-
-  result->tm_year -= 1900;
-  result->tm_mon -= 1;
-  result->tm_yday = 0;
-  result->tm_wday = 0;
-  result->tm_isdst = -1;
-
-  /* Try to normalize the time. */
-  if (((time_t) -1) == mktime(result)) {
-    error.code = ERROR_INVALID_TIME;
-    return error;
-  }
-
-  error.code = ERROR_NONE;
-  return error;
-}
 
 /* Add two dates and normalize the result. Changes the timezone to the local
  * timezone as a side-effect. */
