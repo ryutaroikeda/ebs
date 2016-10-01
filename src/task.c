@@ -10,7 +10,7 @@
 
 /* Read a tsv file of tasks. Each row has the task name, estimated time of
  * completion, and an optinal actual time of completion. Input time is in
- * minutes. */
+ * minutes. Read the first max_task_length rows. */
 struct error
 read_time_sheet(const char* const filename, struct task* const tasks,
     const size_t max_task_length, size_t* const task_count) {

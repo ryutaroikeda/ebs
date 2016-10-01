@@ -17,6 +17,7 @@ struct task {
   int64_t estimated_seconds;
   int64_t actual_seconds;
   char name[MAX_NAME_LENGTH + 1];
+  /* struct string name; */
 };
 
 struct error

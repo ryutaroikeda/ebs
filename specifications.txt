@@ -169,3 +169,47 @@ Features
 
 Read calendar from config file.
 Regex.
+
+
+Simple regex
+-----------
+
+a b
+----- or
+(a|b)
+
+a b
+---- concat
+(a*b)
+
+a b
+----- and
+(a&b)
+
+a b c
+--------------------- concat-assoc, etc
+(a*(b*c)) = ((a*b)*c)
+
+a b c
+------------- match-concat
+match(a, b*a*c)
+
+match(a, b) c
+-------------- match-or
+match(a, (b|c))
+
+match(a,b) match(a,c)
+--------------------- match-and
+match(a, (b&c)
+
+¬match(a,b)
+----------- match-not
+match(a,!b)
+
+
+Simpler regex
+-------------
+
+¬ | & no parentheses.
+We have a conjunctive normal form with string literals and their negation as
+terms. A string matches a term if it is a substring.

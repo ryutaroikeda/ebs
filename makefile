@@ -59,8 +59,9 @@ tags:
 	ctags -R
 
 clean:
-	rm $(OBJECTS)
-	rm $(TESTOBJECT)
+	-rm $(OBJECTS)
+	-rm $(TESTOBJECT)
+	-rm $(DEPENDENCIES)
 
 .PHONY: dev release build tests trace clean tags
 
