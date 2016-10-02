@@ -14,6 +14,9 @@ struct ebs_hash {
   char entries[MAX_HASH_ENTRY * (MAX_HASH_KEY + 1)];
 };
 
+/* Initializes the hash. */
+void ebs_hash_init(struct ebs_hash*);
+
 /* Find the index of the given key. If the key doesn't exist,
  * ERROR_HASH_NOT_FOUND is returned and index is the last one checked. */
 struct error ebs_hash_find(const struct ebs_hash*, const char*, size_t* index);

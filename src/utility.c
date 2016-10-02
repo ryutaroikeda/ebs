@@ -1,8 +1,17 @@
-#include "ebs_time.h"
+#include "utility.h"
 #include "error.h"
 #include <assert.h>
-#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
 #include <time.h>
+
+int random_from_range(const int min, const int max) {
+  assert(min <= max);
+  const unsigned int bucket_size = (unsigned int) (max - min + 1L);
+  assert(bucket_size <= RAND_MAX + 1L);
+  const int r = rand();
+  return (int) ((unsigned int) r % bucket_size) + min;
+}
 
 struct error parse_iso_8601_time(const char* const string, struct tm* const
     result) {
@@ -57,5 +66,36 @@ struct error format_iso_8601_time(const struct tm* const time, char* const
   }
 
   error.code = ERROR_NONE;
+  return error;
+}
+
+struct error get_line(FILE* const fp, char* const buffer, const size_t
+    max_buffer, size_t* const bytes_read) {
+  assert(NULL != fp);
+  assert(NULL != buffer);
+  assert(NULL != bytes_read);
+
+  struct error error;
+  error.code = ERROR_NONE;
+  *bytes_read = 0;
+
+  while (true) {
+    int c = fgetc(fp);
+    if (EOF == c) {
+      error.code = ERROR_END_OF_FILE;
+      break;
+    }
+    if ('\n' == c) {
+      break;
+    }
+    if (*bytes_read < max_buffer - 1) {
+      buffer[*bytes_read] = (char) c;
+      *bytes_read += 1;
+    } else {
+      error.code = ERROR_BUFFER_LIMIT;
+    }
+  }
+
+  buffer[*bytes_read] = '\0';
   return error;
 }

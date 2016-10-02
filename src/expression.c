@@ -6,29 +6,29 @@
 #include <string.h>
 
 /* Get a pointer to a literal by indices. */
-struct literal* get_literal(struct literal* literals, size_t
+static struct literal* get_literal(struct literal* literals, size_t
     disjunction_num, size_t literal_num);
 
 /* Get a const pointer to a literal by indices. */
-const struct literal* get_const_literal(const struct literal* literals, size_t
-    disjuction_num, size_t literal_num);
+static const struct literal* get_const_literal(const struct literal* literals,
+    size_t disjuction_num, size_t literal_num);
 
 /* Return true if the literal matches nothing. This is the empty, negative
  * literal. */
-bool is_null_literal(const struct literal* lit);
+static bool is_null_literal(const struct literal* lit);
 
 /* Return true if the literal matches everything. */
-bool is_full_literal(const struct literal* lit);
+static bool is_full_literal(const struct literal* lit);
 
 /* Return true if the disjunction matches everything. */
-bool is_full_disjunction(const struct expression* expression, size_t
+static bool is_full_disjunction(const struct expression* expression, size_t
     disjunction_num);
 
 /* Print a literal. */
-void print_literal(const struct literal* lit);
+static void print_literal(const struct literal* lit);
 
 /* Print a disjunction. */
-void print_disjunction(const struct expression* expression, size_t
+static void print_disjunction(const struct expression* expression, size_t
     disjunction_num);
 
 bool string_contains(const char* const haystack, const char* const needle) {

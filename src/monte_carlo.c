@@ -1,18 +1,17 @@
 #include "monte_carlo.h"
+#include "utility.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-double
-simulate_completion_time(const double*, const size_t, const double*,
-		const size_t);
+double simulate_completion_time(const double*, const size_t, const double*,
+    const size_t);
 
 /* Return a simulated completion time for the given tasks. */
-double
-simulate_completion_time(const double* velocities,
-	const size_t velocities_length, const double* estimated_times,
-	const size_t estimated_times_length) {
+double simulate_completion_time(const double* velocities, const size_t
+    velocities_length, const double* estimated_times, const size_t
+    estimated_times_length) {
 	assert(NULL != velocities);
 	assert(NULL != estimated_times);
 
@@ -21,8 +20,14 @@ simulate_completion_time(const double* velocities,
 	for (estimated_times_index = 0;
 			estimated_times_index < estimated_times_length;
 			estimated_times_index++) {
-		size_t random_velocities_index =
-			((size_t) (rand()) * velocities_length) / RAND_MAX;
+		size_t random_velocities_index = (size_t) random_from_range(0,
+        (int) velocities_length);
+
+    // If we don't have data, use the estimate directly.
+    if (0 == velocities_length) {
+      predicted_completion_time += estimated_times[estimated_times_index];
+      continue;
+    }
 
 		predicted_completion_time += estimated_times[estimated_times_index] /
 			velocities[random_velocities_index];
@@ -33,8 +38,7 @@ simulate_completion_time(const double* velocities,
 
 /* Simulates the given tasks and put the results in simulated_times. 
  * simulated_times_length is the number of simulations to run. */
-void
-simulate(const double* velocities, const size_t velocities_length,
+void simulate(const double* velocities, const size_t velocities_length,
 		const double* estimated_times, const size_t estimated_times_length,
 		double* simulated_times, size_t simulated_times_length) {
 	assert(NULL != velocities);
@@ -42,18 +46,17 @@ simulate(const double* velocities, const size_t velocities_length,
 	assert(NULL != simulated_times);
 
 	size_t simulated_times_index;
-	for (simulated_times_index = 0;
-			simulated_times_index < simulated_times_length;
-			simulated_times_index++) {
-		simulated_times[simulated_times_index] = simulate_completion_time(
-				velocities, velocities_length, estimated_times,
-				estimated_times_length);
+  for (simulated_times_index = 0; simulated_times_index <
+      simulated_times_length; simulated_times_index++) {
+    simulated_times[simulated_times_index] = simulate_completion_time(
+        velocities, velocities_length, estimated_times,
+        estimated_times_length);
 	}
 }
 
 /* Compute the mean. */
-double
-compute_mean(const double* measurements, const size_t measurements_length) {
+double compute_mean(const double* measurements, const size_t
+    measurements_length) {
 	assert(NULL != measurements);
 	double mean = 0.0;
 
@@ -68,8 +71,7 @@ compute_mean(const double* measurements, const size_t measurements_length) {
 }
 
 /* Compute the variance. */
-double
-compute_variance(const double* const measurements,
+double compute_variance(const double* const measurements,
 		const size_t measurements_length) {
 	assert(NULL != measurements);
 
