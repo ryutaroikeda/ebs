@@ -1,7 +1,9 @@
 #include "error.h"
 #include "task.h"
+#include "utility.h"
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 enum {
   MAX_TASK = 1024,
@@ -14,6 +16,7 @@ main(int argc, char** argv) {
     printf("usage: %s <time_sheet> <task_sheet>\n", argv[0]);
     return 1;
   }
+  struct error error;
 
   const char* const time_sheet = argv[1];
   const char* const task_sheet = argv[2];
@@ -21,9 +24,9 @@ main(int argc, char** argv) {
 
   struct task tasks[MAX_TASK];
   struct time_record records[MAX_RECORD];
+
   size_t task_count;
   size_t record_count;
-  struct error error;
 
   error = read_task_sheet(task_sheet, tasks, MAX_TASK, &task_count);
   if (ERROR_NONE != error.code) {
@@ -32,6 +35,12 @@ main(int argc, char** argv) {
   }
 
   error = read_time_sheet(time_sheet, records, MAX_RECORD, &record_count);
+  if (ERROR_NONE != error.code) {
+    print_error(&error);
+    return 1;
+  }
+
+  error = write_time_sheet(stdout_filename, records, record_count);
   if (ERROR_NONE != error.code) {
     print_error(&error);
     return 1;

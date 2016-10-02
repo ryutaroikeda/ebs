@@ -52,6 +52,26 @@ struct error parse_status(const char* const str, enum task_status* const
   return error;
 }
 
+struct error format_time_record(const struct time_record* const record, char*
+    const buffer, const size_t max_buffer) {
+  assert(NULL != record);
+  assert(NULL != buffer);
+
+  struct error error;
+
+  // This is not thread-safe.
+  const struct tm* time = localtime(&record->time);
+  if (NULL == time) {
+    error.code = ERROR_TIME_UNAVAILABLE;
+    return error;
+  }
+  char time_buffer[MAX_BUFFER];
+  format_iso_8601_time(time, time_buffer, MAX_BUFFER);
+  snprintf(buffer, max_buffer, "%s\t%s", time_buffer, record->name);
+  error.code = ERROR_NONE;
+  return error;
+}
+
 struct error add_time_sheet_entry(const char* const filename, const char* const
     task_name) {
   assert(NULL != filename);
@@ -143,8 +163,7 @@ struct error read_time_sheet(const char* const filename, struct time_record*
       print_error(&error);
       continue;
     }
-    struct time_record record;
-    error = parse_time_record(buffer, &record);
+    error = parse_time_record(buffer, &records[record_num]);
     if (ERROR_NONE != error.code) {
       print_error(&error);
       continue;
@@ -152,6 +171,27 @@ struct error read_time_sheet(const char* const filename, struct time_record*
     *records_read += 1;
   }
 
+  fclose(fp);
+  error.code = ERROR_NONE;
+  return error;
+}
+
+struct error write_time_sheet(const char* const filename, const struct
+    time_record* const records, const size_t max_record) {
+  assert(NULL != filename);
+  assert(NULL != records);
+
+  struct error error;
+  FILE* fp = fopen(filename, "w");
+  if (NULL == fp) {
+    error.code = ERROR_FILE;
+    return error;
+  }
+  for (size_t record_num = 0; record_num < max_record; record_num++) {
+    char buffer[MAX_BUFFER];
+    error = format_time_record(&records[record_num], buffer, MAX_BUFFER);
+    fprintf(fp, "%s\n", buffer);
+  }
   fclose(fp);
   error.code = ERROR_NONE;
   return error;
@@ -278,8 +318,8 @@ struct error write_task_sheet(const char* const filename, const struct task*
   return error;
 }
 
-struct error predict_completion_date(const struct task* const tasks, const size_t
-    task_length) {
+struct error predict_completion_date(const struct task* const tasks, const
+    size_t task_length) {
   assert(NULL != tasks);
 
   /* Compute the velocities and sum up the estimated work time in seconds. */

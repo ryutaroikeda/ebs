@@ -15,7 +15,8 @@ int random_from_range(int min, int max);
 struct error
 parse_iso_8601_time(const char* string, struct tm* result);
 
-/* Format time in ISO-8601.
+/* Format time in ISO-8601 writing up to max_result including the terminating
+ * null.
  * @param time The time to format.
  * @param result The result buffer.
  * @param max_result The size of the result buffer.

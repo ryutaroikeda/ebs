@@ -30,6 +30,10 @@ struct time_record {
 /* Get the name of the task status. */
 const char* get_task_status(enum task_status);
 
+/* Format a time_record as a string. */
+struct error format_time_record(const struct time_record*, char* buffer, size_t
+    max_buffer);
+
 /* Append an entry with the current time and the task name to the time sheet.
  * */
 struct error add_time_sheet_entry(const char* filename, const char* task_name);
@@ -41,7 +45,10 @@ struct error parse_time_record(const char* str, struct time_record*);
 struct error read_time_sheet(const char* filename, struct time_record*, size_t
     max_record, size_t* records_read);
 
-/* Write the time sheet. */
+/* Write the time sheet. Return ERROR_FILE if there's a problem with the file.
+ * */
+struct error write_time_sheet(const char* filename, const struct time_record*,
+    size_t max_record);
 
 /* Parse a task. The format is <task_name> TAB <status> TAB <estimate> TAB
  * <actual>. Return ERROR_TASK_MISSING_FIELDS if some fields are missing.
