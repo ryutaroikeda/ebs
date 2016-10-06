@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-double simulate_completion_time(const double*, const size_t, const double*,
-    const size_t);
-
 /* Return a simulated completion time for the given tasks. */
+static double simulate_completion_time(const double*, const size_t, const
+    double*, const size_t);
+
 double simulate_completion_time(const double* velocities, const size_t
     velocities_length, const double* estimated_times, const size_t
     estimated_times_length) {
@@ -36,8 +36,6 @@ double simulate_completion_time(const double* velocities, const size_t
 	return predicted_completion_time;
 }
 
-/* Simulates the given tasks and put the results in simulated_times. 
- * simulated_times_length is the number of simulations to run. */
 void simulate(const double* velocities, const size_t velocities_length,
 		const double* estimated_times, const size_t estimated_times_length,
 		double* simulated_times, size_t simulated_times_length) {
@@ -54,7 +52,6 @@ void simulate(const double* velocities, const size_t velocities_length,
 	}
 }
 
-/* Compute the mean. */
 double compute_mean(const double* measurements, const size_t
     measurements_length) {
 	assert(NULL != measurements);
@@ -70,7 +67,6 @@ double compute_mean(const double* measurements, const size_t
 	return mean;
 }
 
-/* Compute the variance. */
 double compute_variance(const double* const measurements,
 		const size_t measurements_length) {
 	assert(NULL != measurements);

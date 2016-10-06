@@ -22,7 +22,7 @@ static int test_string_contains(void) {
 }
 
 static int test_parse_expression(void) {
-  char s[] = "hello|!world&!goodbye|world&";
+  char s[] = "hello|!world;!goodbye|world;";
   struct expression e;
   struct error error = parse_expression(s, &e);
   assert(ERROR_NONE == error.code);
@@ -46,14 +46,14 @@ static int do_test_string_matches(const char* const subject, const char* const
 
 static int test_string_matches(void) {
   char* expressions[] = {
-    "hello&",
-    "!hello&",
-    "hello|world&",
-    "hello|world&",
-    "!hello|!world&",
-    "!hello|!world&",
-    "!hello&!world&",
-    "!hello&!world&"
+    "hello",
+    "!hello",
+    "hello,world",
+    "hello,world",
+    "!hello,!world",
+    "!hello,!world",
+    "!hello/!world",
+    "!hello/!world"
   };
   char* subjects[] = {
     "hello world",

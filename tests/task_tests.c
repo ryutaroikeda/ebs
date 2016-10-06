@@ -16,7 +16,7 @@ static int test_parse_time_record(void);
 int test_add_time_sheet_entry(void) {
   char filename[] = "test.tsv";
   char task_name[] = "greet-world";
-  struct error error = add_time_sheet_entry(filename, task_name);
+  struct error error = append_time_sheet_entry(filename, task_name);
   assert(ERROR_NONE == error.code);
   return 0;
 }

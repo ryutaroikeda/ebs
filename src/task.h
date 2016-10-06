@@ -36,7 +36,8 @@ struct error format_time_record(const struct time_record*, char* buffer, size_t
 
 /* Append an entry with the current time and the task name to the time sheet.
  * */
-struct error add_time_sheet_entry(const char* filename, const char* task_name);
+struct error append_time_sheet_entry(const char* filename, const char*
+    task_name);
 
 /* Parse a time sheet entry. */
 struct error parse_time_record(const char* str, struct time_record*);

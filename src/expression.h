@@ -23,8 +23,9 @@ struct expression {
 /* Check if the second string is contained in the first. */
 bool string_contains(const char* haystack, const char* needle);
 
-/* Parse a conjunctive expression. The characters '!', '|', and '&' are
- * reserved. The expression must end with &. */
+/* Parse a conjunctive expression. The characters '!', ',', and '/' are
+ * reserved. The expression must end with /. 
+ * @cleanup Don't require / at end of string. */
 struct error parse_expression(const char* string, struct expression*
     expression);
 

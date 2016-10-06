@@ -72,7 +72,8 @@ struct error format_time_record(const struct time_record* const record, char*
   return error;
 }
 
-struct error add_time_sheet_entry(const char* const filename, const char* const
+struct error append_time_sheet_entry(const char* const filename, const char*
+    const
     task_name) {
   assert(NULL != filename);
   assert(NULL != task_name);

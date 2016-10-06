@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 
+enum {
+  SYMBOL_NOT = '!',
+  SYMBOL_OR = ',',
+  SYMBOL_AND = '/'
+};
+
 /* Get a pointer to a literal by indices. */
 static struct literal* get_literal(struct literal* literals, size_t
     disjunction_num, size_t literal_num);
@@ -108,24 +114,25 @@ struct error parse_expression(const char* const string, struct expression*
   assert(NULL != string);
   assert(NULL != expression);
   memset(expression, 0, sizeof(struct expression));
+  const size_t string_len = strlen(string);
   size_t name_length = 0;
   size_t literal_num = 0;
   size_t disjunction_num = 0;
   struct error error;
 
-  for (size_t string_pos = 0; string_pos < strlen(string); string_pos++) {
-    if ('!' == string[string_pos]) {
+  for (size_t string_pos = 0; string_pos < string_len; string_pos++) {
+    if (SYMBOL_NOT == string[string_pos]) {
       struct literal* lit = get_literal(expression->literals, disjunction_num,
           literal_num);
       lit->is_negative = true;
-    } else if ('|' == string[string_pos]) {
+    } else if (SYMBOL_OR == string[string_pos]) {
       if (MAX_LITERALS <= literal_num) {
         error.code = ERROR_DISJUNCTION_TOO_LONG;
         return error;
       }
       literal_num++;
       name_length = 0;
-    } else if ('&' == string[string_pos]) {
+    } else if (SYMBOL_AND == string[string_pos]) {
       if (MAX_DISJUNCTIONS <= disjunction_num) {
         error.code = ERROR_CONJUNCTION_TOO_LONG;
         return error;
@@ -134,9 +141,9 @@ struct error parse_expression(const char* const string, struct expression*
       // Negate unused literals.
       for (size_t unused_literal_num = literal_num; unused_literal_num <
           MAX_LITERALS; unused_literal_num++) {
-        struct literal* lit = get_literal(expression->literals,
+        struct literal* const unused_lit = get_literal(expression->literals,
             disjunction_num, unused_literal_num);
-        lit->is_negative = true;
+        unused_lit->is_negative = true;
       }
       disjunction_num++;
       literal_num = 0;
@@ -146,10 +153,21 @@ struct error parse_expression(const char* const string, struct expression*
         error.code = ERROR_LITERAL_TOO_LONG;
         return error;
       }
-      struct literal* lit = get_literal(expression->literals, disjunction_num,
-          literal_num);
+      struct literal* const lit = get_literal(expression->literals,
+          disjunction_num, literal_num);
       lit->name[name_length] = string[string_pos];
       name_length++;
+      // Handle end of string.
+      if (string_pos == string_len - 1) {
+        literal_num++;
+        // Negate unused literals.
+        for (size_t unused_literal_num = literal_num; unused_literal_num <
+            MAX_LITERALS; unused_literal_num++) {
+          struct literal* const unused_lit = get_literal(expression->literals,
+              disjunction_num, unused_literal_num);
+          unused_lit->is_negative = true;
+        }
+      }
     }
   }
   error.code = ERROR_NONE;

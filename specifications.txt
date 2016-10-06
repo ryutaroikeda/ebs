@@ -232,3 +232,49 @@ list [filter] List all (incomplete) tasks matching the filter. Options to
 include completed tasks.
 
 
+command line interface
+-----------------------
+
+ebs add <task> <estimate>
+	Create a new task in the task sheet with the given name and estimate.
+The task is active by default.
+
+ebs do <task>
+	Create a new entry in the time sheet with the task. If the task was
+ticked, it becomes unticked. If the task does not exist in the task sheet an
+error is printed.
+
+ebs tick <task>
+	Set the status to done. If the task does not exist, an error is
+printed.
+
+ebs untick <task>
+	Set the status to active. Error if the task doesn't exist.
+
+ebs list [--all] <filter>
+	List tasks matching the filter.
+
+ebs guess <filter>
+	Filter the tasks, then predict the completion time of all active tasks.
+
+
+extra features
+---------------
+
+Stuff related to the calendar. Configuration file and command line.
+
+REPL with auto-completion or bash autocompletion.
+
+Backup before overwriting file, like vim.
+
+Integration with external calendar formats.
+
+Integration with email.
+
+Summary.
+
+Budget fields for tasks.
+
+Hash.
+
+Database features.
