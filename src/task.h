@@ -74,8 +74,11 @@ struct error write_task_sheet(const char* filename, const struct task*, size_t
 void add_time_record_to_tasks(const struct time_record* records, size_t
     max_record, struct task* tasks, size_t max_task);
 
-/* Predict completion date. */
+/* Predict completion date for the filtered, active tasks. Completed tasks are
+ * not filtered. Possible errors are ERROR_TIME_UNAVAILABLE and
+ * ERROR_INCOMPLETE_TASK if the tasks cannot be completed with the (currently
+ * hard-coded) calendar. */
 struct error
-predict_completion_date(const struct task*, const size_t);
+predict_completion_date(const struct task*, const size_t, const char* filter); 
 
 #endif

@@ -33,4 +33,7 @@ format_iso_8601_time(const struct tm* time, char* result, size_t max_result);
 struct error get_line(FILE* fp, char* buffer, size_t max_buffer, size_t*
     bytes_read);
 
+/* Copy a file. This is used for backing up files. */
+struct error copy(const char* src, const char* dst);
+
 #endif

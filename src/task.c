@@ -1,6 +1,7 @@
 #include "task.h"
 #include "calendar.h"
 #include "error.h"
+#include "expression.h"
 #include "utility.h"
 #include "monte_carlo.h"
 
@@ -14,7 +15,7 @@
 enum {
   MAX_STATUS_NAME = 31,
   MAX_TASK_LENGTH = 1024,
-  MAX_BUFFER = 511,
+  MAX_BUFFER = 4095,
   // @cleanup These can be configuration.
   MAX_SIMULATION_LENGTH = 100,
   SIGMA_LEVEL = 2,
@@ -183,6 +184,14 @@ struct error write_time_sheet(const char* const filename, const struct
   assert(NULL != records);
 
   struct error error;
+  char backup[MAX_BUFFER + 1];
+  snprintf(backup, MAX_BUFFER, "%s.bak", filename);
+  backup[MAX_BUFFER] = '\0';
+  error = copy(filename, backup);
+  if (ERROR_NONE != error.code) {
+    return error;
+  }
+
   FILE* fp = fopen(filename, "w");
   if (NULL == fp) {
     error.code = ERROR_FILE;
@@ -194,6 +203,7 @@ struct error write_time_sheet(const char* const filename, const struct
     fprintf(fp, "%s\n", buffer);
   }
   fclose(fp);
+  remove(backup);
   error.code = ERROR_NONE;
   return error;
 }
@@ -305,6 +315,14 @@ struct error write_task_sheet(const char* const filename, const struct task*
   assert(NULL != filename);
   assert(NULL != tasks);
   struct error error;
+  char backup[MAX_BUFFER + 1];
+  snprintf(backup, MAX_BUFFER, "%s.bak", filename);
+  backup[MAX_BUFFER] = '\0';
+  error = copy(filename, backup);
+  if (ERROR_NONE != error.code) {
+    return error;
+  }
+
   FILE* fp = fopen(filename, "w");
   if (NULL == fp) {
     error.code = ERROR_FILE;
@@ -315,13 +333,22 @@ struct error write_task_sheet(const char* const filename, const struct task*
     format_task(&tasks[task_num], buffer, MAX_BUFFER);
     fprintf(fp, "%s\n", buffer);
   }
+  fclose(fp);
+  remove(backup);
   error.code = ERROR_NONE;
   return error;
 }
 
 struct error predict_completion_date(const struct task* const tasks, const
-    size_t task_length) {
+    size_t task_length, const char* const filter) {
   assert(NULL != tasks);
+  assert(NULL != filter);
+
+  struct expression expression;
+  struct error error = parse_expression(filter, &expression);
+  if (ERROR_NONE != error.code) {
+    return error;
+  }
 
   /* Compute the velocities and sum up the estimated work time in seconds. */
   double velocities[MAX_TASK_LENGTH];
@@ -335,6 +362,9 @@ struct error predict_completion_date(const struct task* const tasks, const
 
   for (task_index = 0; task_index < task_length; task_index++) {
     if (STATUS_ACTIVE == tasks[task_index].status) {
+      if (!string_matches(tasks[task_index].name, &expression)) {
+        continue;
+      }
       seconds_to_work += tasks[task_index].estimated_seconds;
       estimated_times[estimated_times_index] = (double)
         tasks[task_index].estimated_seconds;
@@ -368,12 +398,10 @@ struct error predict_completion_date(const struct task* const tasks, const
   const int64_t ninety_five_percent_seconds_to_work = (int64_t) (mean +
       (SIGMA_LEVEL * standard_deviation));
 
-  printf("std. dev: %f\n", standard_deviation);
-  printf("mean: %" PRId64 "\n5%%: %" PRId64 "\n95%%: %" PRId64 "\n",
-      mean_seconds_to_work, five_percent_seconds_to_work,
-      ninety_five_percent_seconds_to_work);
-
-  struct error error;
+  //printf("std. dev: %f\n", standard_deviation);
+  //printf("mean: %" PRId64 "\n5%%: %" PRId64 "\n95%%: %" PRId64 "\n",
+      //mean_seconds_to_work, five_percent_seconds_to_work,
+      //ninety_five_percent_seconds_to_work);
 
   /* Try to get the current time. */
   time_t current_time = time(NULL);

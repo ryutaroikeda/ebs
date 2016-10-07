@@ -4,7 +4,6 @@
 #include "utility.h"
 #include <assert.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -86,7 +85,7 @@ void print_help(void) {
   puts("add <task> <estimate>  - add a task"); 
   puts("do <task>              - start recording time for task");
   puts("tick <task>            - mark task as completed");
-  puts("guess <filter>         - predict completion time of tasks");
+  puts("guess [filter]         - predict completion time of tasks");
 }
 
 int list_tasks(const struct task* tasks, size_t max_task, const char* const
@@ -259,7 +258,7 @@ int main(int argc, char** argv) {
   }
 
   if (COMMAND_GUESS == type) {
-    error = predict_completion_date(tasks, task_count);
+    error = predict_completion_date(tasks, task_count, filter);
     if (ERROR_NONE != error.code) {
       print_error(&error);
       return 1;

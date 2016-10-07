@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+enum {
+  MAX_BUFFER = 4095
+};
+
 int random_from_range(const int min, const int max) {
   assert(min <= max);
   const unsigned int bucket_size = (unsigned int) (max - min + 1L);
@@ -97,5 +101,35 @@ struct error get_line(FILE* const fp, char* const buffer, const size_t
   }
 
   buffer[*bytes_read] = '\0';
+  return error;
+}
+
+struct error copy(const char* const src, const char* const dst) {
+  assert(NULL != src);
+  assert(NULL != dst);
+
+  struct error error;
+  FILE* const fin = fopen(src, "r");
+  if (NULL == fin) {
+    error.code = ERROR_FILE;
+    return error;
+  }
+  FILE* const fout = fopen(dst, "w");
+  if (NULL == fout) {
+    error.code = ERROR_FILE;
+    return error;
+  }
+  char buffer[MAX_BUFFER + 1];
+  while (!feof(fin)) {
+    size_t bytes_read = fread(buffer, sizeof(char), MAX_BUFFER, fin);
+    size_t bytes_written = fwrite(buffer, sizeof(char), bytes_read, fout);
+    if (bytes_read != bytes_written) {
+      error.code = ERROR_FILE;
+      return error;
+    }
+  }
+  fclose(fout);
+  fclose(fin);
+  error.code = ERROR_NONE;
   return error;
 }
