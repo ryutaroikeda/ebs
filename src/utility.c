@@ -1,6 +1,8 @@
 #include "utility.h"
 #include "error.h"
 #include <assert.h>
+#include <errno.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -133,3 +135,34 @@ struct error copy(const char* const src, const char* const dst) {
   error.code = ERROR_NONE;
   return error;
 }
+
+struct error parse_int(const char* const str, const int base, intmax_t* result)
+{
+  assert(NULL != str);
+  assert(NULL != result);
+
+  struct error error;
+
+  if ((base < 2) || (36 < base)) {
+    error.code = ERROR_STRING_TO_INT;
+    return error;
+  }
+
+  char* tail;
+  errno = 0;
+  *result = strtoimax(str, &tail, base);
+  // Check for invalid format.
+  if ((str == tail) || (*tail != '\0'))  {
+    error.code = ERROR_STRING_TO_INT;
+    return error;
+  }
+  // Check for overflow.
+  if (((INTMAX_MAX == *result) || (INTMAX_MIN == *result)) && (errno ==
+        ERANGE)) {
+    error.code = ERROR_STRING_TO_INT;
+    return error;
+  }
+  error.code = ERROR_NONE;
+  return error;
+}
+

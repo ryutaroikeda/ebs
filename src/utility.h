@@ -2,6 +2,7 @@
 #define _ebs_utility_h_
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 struct tm;
@@ -36,4 +37,6 @@ struct error get_line(FILE* fp, char* buffer, size_t max_buffer, size_t*
 /* Copy a file. This is used for backing up files. */
 struct error copy(const char* src, const char* dst);
 
+/* Parse an int. */
+struct error parse_int(const char*, int base, intmax_t* result);
 #endif

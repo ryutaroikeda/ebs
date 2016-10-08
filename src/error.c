@@ -41,8 +41,14 @@ print_error(const struct error* const error) {
     case ERROR_TASK_MISSING_FIELDS:
       puts("task is missing fields");
       break;
+    case ERROR_NO_SUCH_TASK:
+      puts("no such task");
+      break;
+    case ERROR_STRING_TO_INT:
+      puts("invalid int");
+      break;
     default:
-      puts("unknown");
+      puts("unknown error");
       break;
   }
 }

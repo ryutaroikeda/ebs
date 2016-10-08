@@ -74,8 +74,7 @@ struct error format_time_record(const struct time_record* const record, char*
 }
 
 struct error append_time_sheet_entry(const char* const filename, const char*
-    const
-    task_name) {
+    const task_name) {
   assert(NULL != filename);
   assert(NULL != task_name);
 
@@ -140,10 +139,10 @@ struct error parse_time_record(const char* const str, struct time_record* const
   return error;
 }
 
-struct error read_time_sheet(const char* const filename, struct time_record*
-    const records, const size_t max_record, size_t* const records_read) {
+struct error read_time_sheet(const char* const filename, struct task* const
+    tasks, const size_t max_task) {
   assert(NULL != filename);
-  assert(NULL != records);
+  assert(NULL != tasks);
 
   struct error error;
   FILE * fp = fopen(filename, "r");
@@ -152,12 +151,24 @@ struct error read_time_sheet(const char* const filename, struct time_record*
     return error;
   }
 
-  *records_read = 0;
+  size_t bytes_read;
+  char buffer[MAX_BUFFER];
+  struct time_record last_record;
+  error = get_line(fp, buffer, MAX_BUFFER, &bytes_read);
+  if (ERROR_END_OF_FILE == error.code) {
+    error.code = ERROR_NONE;
+    return error;
+  }
+  if (ERROR_NONE != error.code) {
+    return error;
+  }
+  error = parse_time_record(buffer, &last_record);
+  if (ERROR_NONE != error.code) {
+    print_error(&error);
+  }
 
-  for (size_t record_num = 0; record_num < max_record; record_num++) {
-    size_t bytes_read;
-    char buffer[MAX_BUFFER + 1];
-    error = get_line(fp, buffer, MAX_BUFFER + 1, &bytes_read);
+  while (true) {
+    error = get_line(fp, buffer, MAX_BUFFER, &bytes_read);
     if (ERROR_END_OF_FILE == error.code) {
       break;
     }
@@ -165,69 +176,23 @@ struct error read_time_sheet(const char* const filename, struct time_record*
       print_error(&error);
       continue;
     }
-    error = parse_time_record(buffer, &records[record_num]);
+    struct time_record record;
+    error = parse_time_record(buffer, &record);
     if (ERROR_NONE != error.code) {
       print_error(&error);
       continue;
     }
-    *records_read += 1;
+    intmax_t elapsed_time = (intmax_t) difftime(record.time, last_record.time);
+    struct task* const task = find_task(last_record.name, tasks, max_task);
+    if (NULL != task) {
+      task->actual_seconds += elapsed_time;
+    }
+    last_record = record;
   }
 
   fclose(fp);
   error.code = ERROR_NONE;
   return error;
-}
-
-struct error write_time_sheet(const char* const filename, const struct
-    time_record* const records, const size_t max_record) {
-  assert(NULL != filename);
-  assert(NULL != records);
-
-  struct error error;
-  char backup[MAX_BUFFER + 1];
-  snprintf(backup, MAX_BUFFER, "%s.bak", filename);
-  backup[MAX_BUFFER] = '\0';
-  error = copy(filename, backup);
-  if (ERROR_NONE != error.code) {
-    return error;
-  }
-
-  FILE* fp = fopen(filename, "w");
-  if (NULL == fp) {
-    error.code = ERROR_FILE;
-    return error;
-  }
-  for (size_t record_num = 0; record_num < max_record; record_num++) {
-    char buffer[MAX_BUFFER];
-    error = format_time_record(&records[record_num], buffer, MAX_BUFFER);
-    fprintf(fp, "%s\n", buffer);
-  }
-  fclose(fp);
-  remove(backup);
-  error.code = ERROR_NONE;
-  return error;
-}
-
-void add_time_record_to_tasks(const struct time_record* const records, const
-    size_t max_record, struct task* const tasks, const size_t max_task) {
-  assert(NULL != records);
-  assert(NULL != tasks);
-
-  for (size_t record_num = 1; record_num < max_record; record_num++) {
-    int64_t elapsed_time = (int64_t) difftime(records[record_num].time,
-        records[record_num - 1].time);
-    // Find the previous task by name.
-    size_t task_num;
-    for (task_num = 0; task_num < max_task; task_num++) {
-      if (0 == strcmp(records[record_num - 1].name, tasks[task_num].name)) {
-        break;
-      }
-    }
-    // If the task exists, add to the actual time.
-    if (task_num < max_task) {
-      tasks[task_num].actual_seconds += elapsed_time;
-    }
-  }
 }
 
 struct error parse_task(const char* const str, struct task* const result) {
@@ -237,7 +202,7 @@ struct error parse_task(const char* const str, struct task* const result) {
   char status_buffer[MAX_STATUS_NAME + 1];
   struct error error;
   const int expected_matches = 4;
-  int matches = sscanf(str, "%127s\t%31s\t%" SCNd64 "\t%" SCNd64,
+  int matches = sscanf(str, "%127s\t%31s\t%jd\t%jd",
       result->name, status_buffer, &result->estimated_seconds,
       &result->actual_seconds);
   if (expected_matches != matches) {
@@ -262,7 +227,7 @@ struct error format_task(const struct task* const task, char* const buffer,
 
   struct error error;
 
-  int bytes_num = snprintf(buffer, max_buffer, "%s\t%s\t%" PRId64 "\t%" PRId64,
+  int bytes_num = snprintf(buffer, max_buffer, "%s\t%s\t%jd\t%jd",
       task->name, get_task_status(task->status), task->estimated_seconds / 60,
       task->actual_seconds / 60);
 
@@ -274,68 +239,38 @@ struct error format_task(const struct task* const task, char* const buffer,
   return error;
 }
 
-struct error read_task_sheet(const char* const filename, struct task* const
-    tasks, const size_t max_task_length, size_t* const tasks_read) {
-  assert(NULL != filename);
-  assert(NULL != tasks);
+struct error read_task(FILE* const fp, struct task* const task) {
+  assert(NULL != fp);
+  assert(NULL != task);
 
   struct error error;
-  FILE* fp = fopen(filename, "r");
-  if (NULL == fp) {
-    error.code = ERROR_FILE;
-    return error;
-  }
-
-  size_t task_index = 0;
-  size_t row_count;
-  for (row_count = 0; row_count < max_task_length; row_count++) {
-    char buffer[MAX_TASK_NAME + 1];
-    size_t bytes_read;
-    error = get_line(fp, buffer, MAX_TASK_NAME + 1, &bytes_read);
-    if (ERROR_END_OF_FILE == error.code) {
-      break;
-    }
-    if (ERROR_NONE != error.code) {
-      print_error(&error);
-    }
-    error = parse_task(buffer, &tasks[task_index]);
-    if (ERROR_NONE != error.code) {
-      print_error(&error);
-    }
-    task_index++;
-  }
-  *tasks_read = task_index;
-
   error.code = ERROR_NONE;
-  return error;
-}
+  char buffer[MAX_BUFFER];
+  size_t bytes_read;
 
-struct error write_task_sheet(const char* const filename, const struct task*
-    const tasks, const size_t max_task) {
-  assert(NULL != filename);
-  assert(NULL != tasks);
-  struct error error;
-  char backup[MAX_BUFFER + 1];
-  snprintf(backup, MAX_BUFFER, "%s.bak", filename);
-  backup[MAX_BUFFER] = '\0';
-  error = copy(filename, backup);
+  error = get_line(fp, buffer, MAX_BUFFER, &bytes_read);
   if (ERROR_NONE != error.code) {
     return error;
   }
+  
+  error = parse_task(buffer, task);
+  return error;
+}
 
-  FILE* fp = fopen(filename, "w");
-  if (NULL == fp) {
-    error.code = ERROR_FILE;
+struct error write_task(const struct task* const task, FILE* const fp) {
+  assert(NULL != task);
+  assert(NULL != fp);
+
+  struct error error;
+  error.code = ERROR_NONE;
+  char buffer[MAX_BUFFER];
+
+  error = format_task(task, buffer, MAX_BUFFER);
+  if (ERROR_NONE != error.code) {
     return error;
   }
-  for (size_t task_num = 0; task_num < max_task; task_num++) {
-    char buffer[MAX_BUFFER];
-    format_task(&tasks[task_num], buffer, MAX_BUFFER);
-    fprintf(fp, "%s\n", buffer);
-  }
-  fclose(fp);
-  remove(backup);
-  error.code = ERROR_NONE;
+  fprintf(fp, "%s\n", buffer);
+
   return error;
 }
 
@@ -355,7 +290,7 @@ struct error predict_completion_date(const struct task* const tasks, const
   double estimated_times[MAX_TASK_LENGTH];
   double simulated_times[MAX_SIMULATION_LENGTH];
 
-  int64_t seconds_to_work = 0;
+  intmax_t seconds_to_work = 0;
   size_t task_index;
   size_t velocity_index = 0;
   size_t estimated_times_index = 0;
@@ -392,16 +327,11 @@ struct error predict_completion_date(const struct task* const tasks, const
       MAX_SIMULATION_LENGTH);
   const double standard_deviation = sqrt(variance);
 
-  const int64_t mean_seconds_to_work = (int64_t) mean;
-  const int64_t five_percent_seconds_to_work = (int64_t) (mean - 
+  const intmax_t mean_seconds_to_work = (intmax_t) mean;
+  const intmax_t five_percent_seconds_to_work = (intmax_t) (mean - 
       (SIGMA_LEVEL * standard_deviation));
-  const int64_t ninety_five_percent_seconds_to_work = (int64_t) (mean +
+  const intmax_t ninety_five_percent_seconds_to_work = (intmax_t) (mean +
       (SIGMA_LEVEL * standard_deviation));
-
-  //printf("std. dev: %f\n", standard_deviation);
-  //printf("mean: %" PRId64 "\n5%%: %" PRId64 "\n95%%: %" PRId64 "\n",
-      //mean_seconds_to_work, five_percent_seconds_to_work,
-      //ninety_five_percent_seconds_to_work);
 
   /* Try to get the current time. */
   time_t current_time = time(NULL);
@@ -471,4 +401,18 @@ struct error predict_completion_date(const struct task* const tasks, const
 
   error.code = ERROR_NONE;
   return error;
+}
+
+struct task* find_task(const char* const name, struct task* tasks, size_t
+    max_task) {
+  assert(NULL != name);
+  assert(NULL != tasks);
+
+  for (size_t task_num = 0; task_num < max_task; task_num++) {
+    if (0 != strcmp(name, tasks[task_num].name)) {
+      continue;
+    }
+    return &tasks[task_num];
+  }
+  return NULL;
 }
