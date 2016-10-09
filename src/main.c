@@ -27,11 +27,13 @@ void print_help(void);
 /* List tasks matching the given expression. */
 int list_tasks(const char* filter, const struct config* config);
 
-/* Append task to the time sheet. */
-int do_task(const char* task_name, const struct config* config);
+/* Append task to the time sheet. If the task does not exist, create a new task
+ * with the given estimates.*/
+int do_task(const char* task_name, intmax_t estimated_minutes, const struct
+    config* config);
 
 /* Add task to the task sheet. */
-int add_task(const char* task_name, intmax_t estimated_seconds, const struct
+int add_task(const char* task_name, intmax_t estimated_minutes, const struct
     config* config);
 
 /* Set the task status to done. */
@@ -190,7 +192,8 @@ struct error scan_task(const char* const task_name, const struct config* const
   return error;
 }
 
-int do_task(const char* const task_name, const struct config* const config) {
+int do_task(const char* const task_name, const intmax_t estimated_minutes,
+    const struct config* const config) {
   assert(NULL != task_name);
   assert(NULL != config);
   assert(NULL != config->base_path);
@@ -205,8 +208,15 @@ int do_task(const char* const task_name, const struct config* const config) {
     return 1;
   }
   if (!task_exists) {
-    printf("no such task %s\n", task_name);
-    return 1;
+    if (estimated_minutes <= 0) {
+      printf("no such task %s\n", task_name);
+      return 1;
+    }
+    // Create a new task.
+    printf("creating task %s\n", task_name);
+    if (0 != add_task(task_name, estimated_minutes, config)) {
+      return 1;
+    }
   }
 
   snprintf(time_sheet, MAX_BUFFER, "%s/%s", config->base_path, TIME_SHEET);
@@ -223,6 +233,11 @@ int add_task(const char* const task_name, const intmax_t estimated_minutes,
   assert(NULL != task_name);
   assert(NULL != config);
   assert(NULL != config->base_path);
+
+  if (estimated_minutes <= 0) {
+    puts("estimate must be greater than zero");
+    return 1;
+  }
 
   struct error error;
   char task_sheet[MAX_BUFFER];
@@ -465,13 +480,22 @@ int main(int argc, char** argv) {
 
     if (COMMAND_DO == command_type) {
       if (argc <= arg_num + 1) {
-        puts("usage: do <task>");
+        puts("usage: do <task> [estimate]");
         return 1;
       }
       const char* task_name = NULL;
       arg_num += 1;
       task_name = argv[arg_num];
-      return do_task(task_name, &config);
+      intmax_t estimated_minutes = -1;
+      if (arg_num + 1 < argc) {
+        arg_num += 1;
+        error = parse_int(argv[arg_num], 10, &estimated_minutes);
+        if (ERROR_NONE != error.code) {
+          print_error(&error);
+          return 1;
+        }
+      }
+      return do_task(task_name, estimated_minutes, &config);
     } 
 
     if (COMMAND_ADD == command_type) {

@@ -3,6 +3,8 @@ ideas for features
 
 * autocomplete task names
 
+* set task to 'rest' if the current task is ticked.
+
 * rm <task> - remove the task
 
 * list should list incomplete tasks. Have option to print completed tasks.
