@@ -41,7 +41,10 @@ int tick_task(const char* task_name, const struct config* config);
 int untick_task(const char* task_name, const struct config* config);
 
 /* Predict task completion times. */
-int guess(const char* filter, const struct config* config);
+int predict(const char* filter, const struct config* config);
+
+/* Print the current task being done. */
+int print_top_task(const struct config*);
 
 /* Load tasks into a buffer. */
 struct error load_tasks(const char* filter, const struct config* , struct task*
@@ -64,9 +67,10 @@ void print_help(void) {
   puts("add <task> <estimate>  - add a task"); 
   puts("config                 - print the configuration");
   puts("do <task>              - start recording time for task");
-  puts("guess [filter]         - predict completion time of tasks");
+  puts("predict [filter]       - predict completion time of tasks");
   puts("list [filter]          - list tasks");
   puts("tick <task>            - mark task as completed");
+  puts("top                    - print the current task");
 }
 
 int list_tasks(const char* const filter, const struct config* const config) {
@@ -214,7 +218,7 @@ int do_task(const char* const task_name, const struct config* const config) {
   return 0;
 }
 
-int add_task(const char* const task_name, const intmax_t estimated_seconds,
+int add_task(const char* const task_name, const intmax_t estimated_minutes,
     const struct config* const config) {
   assert(NULL != task_name);
   assert(NULL != config);
@@ -235,7 +239,7 @@ int add_task(const char* const task_name, const intmax_t estimated_seconds,
   }
 
   struct task task;
-  task.estimated_seconds = estimated_seconds;
+  task.estimated_seconds = estimated_minutes * 60;
   task.actual_seconds = 0;
   strncpy(task.name, task_name, MAX_TASK_NAME);
   task.name[MAX_TASK_NAME] = '\0';
@@ -344,7 +348,7 @@ struct error set_task_status(const char* const task_name, const enum
   return error;
 }
 
-int guess(const char* const filter, const struct config* const config) {
+int predict(const char* const filter, const struct config* const config) {
   assert(NULL != filter);
   assert(NULL != config);
   assert(NULL != config->base_path);
@@ -365,6 +369,43 @@ int guess(const char* const filter, const struct config* const config) {
     return 1;
   }
 
+  return 0;
+}
+
+int print_top_task(const struct config* const config) {
+  assert(NULL != config);
+  assert(NULL != config->base_path);
+
+  char time_sheet[MAX_BUFFER];
+  snprintf(time_sheet, MAX_BUFFER, "%s/%s", config->base_path, TIME_SHEET);
+  FILE* fp = fopen(time_sheet, "r");
+  if (NULL == fp) {
+    printf("fopen(%s): %s\n", time_sheet, strerror(errno));
+    return 1;
+  }
+
+  struct error error;
+  struct time_record last_record;
+  bool task_exists = false;
+
+  for (size_t loop_num = 0; loop_num < MAX_LOOP; loop_num++) {
+    struct time_record record;
+    error = read_time_record(fp, &record);
+    if (ERROR_END_OF_FILE == error.code) {
+      break;
+    }
+    if (ERROR_NONE != error.code) {
+      continue;
+    }
+    task_exists = true;
+    last_record = record;
+  }
+
+  if (!task_exists) {
+    puts("no task found");
+    return 0;
+  }
+  printf("%s\n", last_record.name);
   return 0;
 }
 
@@ -396,6 +437,7 @@ int main(int argc, char** argv) {
     error = parse_command_type(argv[arg_num], &command_type);
     if (ERROR_NONE != error.code) {
       printf("unknown command or configuration %s\n", argv[arg_num]);
+      print_help();
       return 1;
     }
     if (COMMAND_HELP == command_type) {
@@ -440,13 +482,13 @@ int main(int argc, char** argv) {
       arg_num += 1;
       const char* const task_name = argv[arg_num];
       arg_num += 1;
-      intmax_t estimated_seconds;
-      error = parse_int(argv[arg_num], 10, &estimated_seconds);
+      intmax_t estimated_minutes;
+      error = parse_int(argv[arg_num], 10, &estimated_minutes);
       if (ERROR_NONE != error.code) {
         print_error(&error);
         return 1;
       }
-      return add_task(task_name, estimated_seconds, &config);
+      return add_task(task_name, estimated_minutes, &config);
     }
 
     if (COMMAND_TICK == command_type) {
@@ -469,17 +511,23 @@ int main(int argc, char** argv) {
       return untick_task(task_name, &config);
     }
 
-    if (COMMAND_GUESS == command_type) {
+    if (COMMAND_PREDICT == command_type) {
       const char* filter = "";
       if (arg_num + 1 < argc) {
         arg_num += 1;
         filter = argv[arg_num];
       }
-      return guess(filter, &config);
+      return predict(filter, &config);
     }
+
+    if (COMMAND_TOP == command_type) {
+      return print_top_task(&config);
+    }
+
     printf("unsupported command %s\n", get_command_name(command_type));
     return 1;
   }
 
-  return 0;
+  print_help();
+  return 1;
 }

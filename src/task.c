@@ -20,7 +20,8 @@ enum {
   MAX_SIMULATION_LENGTH = 100,
   SIGMA_LEVEL = 2,
   // @cleanup This should come from the calendar in the future.
-  SECONDS_OF_WORK_PER_DAY = 8 * 60 * 60
+  SECONDS_OF_WORK_PER_DAY = 8 * 60 * 60,
+  MAX_LOOP = 1000000
 };
 
 static const char* const status_names[] = {
@@ -69,6 +70,27 @@ struct error format_time_record(const struct time_record* const record, char*
   char time_buffer[MAX_BUFFER];
   format_iso_8601_time(time, time_buffer, MAX_BUFFER);
   snprintf(buffer, max_buffer, "%s\t%s", time_buffer, record->name);
+  error.code = ERROR_NONE;
+  return error;
+}
+
+struct error read_time_record(FILE* const fp, struct time_record* const record)
+{
+  assert(NULL != fp);
+  assert(NULL != record);
+
+  struct error error;
+  char buffer[MAX_BUFFER];
+  size_t bytes_read;
+
+  error = get_line(fp, buffer, MAX_BUFFER, &bytes_read);
+  if (ERROR_NONE != error.code) {
+    return error;
+  }
+  error = parse_time_record(buffer, record);
+  if (ERROR_NONE != error.code) {
+    print_error(&error);
+  }
   error.code = ERROR_NONE;
   return error;
 }
@@ -151,10 +173,8 @@ struct error read_time_sheet(const char* const filename, struct task* const
     return error;
   }
 
-  size_t bytes_read;
-  char buffer[MAX_BUFFER];
   struct time_record last_record;
-  error = get_line(fp, buffer, MAX_BUFFER, &bytes_read);
+  error = read_time_record(fp, &last_record);
   if (ERROR_END_OF_FILE == error.code) {
     error.code = ERROR_NONE;
     return error;
@@ -162,22 +182,13 @@ struct error read_time_sheet(const char* const filename, struct task* const
   if (ERROR_NONE != error.code) {
     return error;
   }
-  error = parse_time_record(buffer, &last_record);
-  if (ERROR_NONE != error.code) {
-    print_error(&error);
-  }
 
-  while (true) {
-    error = get_line(fp, buffer, MAX_BUFFER, &bytes_read);
+  for (size_t loop_num = 0; loop_num < MAX_LOOP; loop_num++) {
+    struct time_record record;
+    error = read_time_record(fp, &record);
     if (ERROR_END_OF_FILE == error.code) {
       break;
     }
-    if (ERROR_NONE != error.code) {
-      print_error(&error);
-      continue;
-    }
-    struct time_record record;
-    error = parse_time_record(buffer, &record);
     if (ERROR_NONE != error.code) {
       print_error(&error);
       continue;

@@ -35,6 +35,9 @@ const char* get_task_status(enum task_status);
 struct error format_time_record(const struct time_record*, char* buffer, size_t
     max_buffer);
 
+/* Read a time record. */
+struct error read_time_record(FILE* fp, struct time_record*);
+
 /* Append an entry with the current time and the task name to the time sheet.
  * */
 struct error append_time_sheet_entry(const char* filename, const char*

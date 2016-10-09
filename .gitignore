@@ -1,6 +1,8 @@
 *.swp
 *.d
 *.o
+*.dSYM
 bin
 tags
 trash
+resources

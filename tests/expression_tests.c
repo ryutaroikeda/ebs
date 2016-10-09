@@ -10,7 +10,7 @@ static int test_parse_expression(void);
 static int test_string_matches(void);
 static int do_test_string_matches(const char*, const char*, bool);
 
-static int test_string_contains(void) {
+int test_string_contains(void) {
   char s1[] = "hello world";
   char s2[] = "hello";
   char s3[] = "mundo";
@@ -21,7 +21,7 @@ static int test_string_contains(void) {
   return 0;
 }
 
-static int test_parse_expression(void) {
+int test_parse_expression(void) {
   char s[] = "hello|!world;!goodbye|world;";
   struct expression e;
   struct error error = parse_expression(s, &e);
@@ -29,7 +29,7 @@ static int test_parse_expression(void) {
   return 0;
 }
 
-static int do_test_string_matches(const char* const subject, const char* const
+int do_test_string_matches(const char* const subject, const char* const
     expression, const bool expect_match) {
   struct expression e;
   struct error error = parse_expression(expression, &e);
@@ -44,7 +44,7 @@ static int do_test_string_matches(const char* const subject, const char* const
   return 0;
 }
 
-static int test_string_matches(void) {
+int test_string_matches(void) {
   char* expressions[] = {
     "hello",
     "!hello",

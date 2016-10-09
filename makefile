@@ -20,10 +20,10 @@ TESTSCRIPT=tests/runtests.sh
 
 all: $(DEPENDENCIES) $(TARGET) tests
 
-dev: CFLAGS=-g -Wextra -Wall -pedantic -Werror -Isrc $(OPTFLAGS)
+dev: CFLAGS=-g -Isrc $(OPTFLAGS)
 dev: all
 
-release: CFLAGS=-g -O2 -Wextra -Wall -pedantic -Isrc -DNDEBUG $(OPTFLAGS)
+release: CFLAGS=-g -O2 -Isrc -DNDEBUG $(OPTFLAGS)
 release: all
 
 $(TARGET): build $(OBJECTS)
@@ -49,21 +49,24 @@ tests/%.d: tests/%.c
 	sed -e 's:$*.o:tests/$*.o:g' $@ > tmp
 	mv -f tmp $@
 
-trace/trace.o: trace/trace.c
-	$(CC) -c $< -o $@
-
 valgrind:
 	VALGRIND="valgrind --log-file=/tmp/valgrind-%p.log" $(MAKE)
 
 tags:
-	ctags -R
+	ctags -R src
 
 clean:
 	-rm $(OBJECTS)
 	-rm $(TESTOBJECT)
 	-rm $(DEPENDENCIES)
 
-.PHONY: dev release build tests trace clean tags
+install: $(TARGET)
+	@cp $(TARGET) ~/bin
+	@mkdir ~/.ebs
+	@touch ~/.ebs/task.tsv
+	@touch ~/.ebs/time.tsv
+
+.PHONY: dev release build tests trace clean tags install
 
 ifeq (,$(filter $(MAKECMDGOALS),clean))
 -include $(DEPENDENCIES)

@@ -32,5 +32,11 @@ const char* get_config_name(const enum config_type config_type) {
 }
 
 void print_config(const struct config* const config) {
+  assert(NULL != config);
+
+  if (NULL == config->base_path) {
+    puts("path = (not set)");
+    return;
+  }
   printf("path = %s\n", config->base_path);
 }

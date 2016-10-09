@@ -1,0 +1,18 @@
+ideas for features
+------------------
+
+* autocomplete task names
+
+* rm <task> - remove the task
+
+* list should list incomplete tasks. Have option to print completed tasks.
+
+* machine friendly output for predictions
+
+* automatic recovery from backup
+
+* more informative error messages
+
+* make predictions more precise (down to minutes instead of days).
+
+* configurable calendar

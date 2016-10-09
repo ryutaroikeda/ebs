@@ -11,7 +11,8 @@ static const char* const command_names[] = {
   "tick",
   "untick",
   "list",
-  "guess",
+  "predict",
+  "top"
 };
 
 struct error parse_command_type(const char* const str, enum command_type* const
