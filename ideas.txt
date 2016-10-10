@@ -5,16 +5,14 @@ ideas for features
 
 * set task to 'rest' if the current task is ticked.
 
-* rm <task> - remove the task
+* make predictions more precise (down to minutes instead of days).
 
-* list should list incomplete tasks. Have option to print completed tasks.
+* rm <task> - remove the task
 
 * machine friendly output for predictions
 
 * automatic recovery from backup
 
 * more informative error messages
-
-* make predictions more precise (down to minutes instead of days).
 
 * configurable calendar

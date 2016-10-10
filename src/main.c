@@ -25,7 +25,7 @@ enum {
 void print_help(void);
 
 /* List tasks matching the given expression. */
-int list_tasks(const char* filter, const struct config* config);
+int list_tasks(const char* filter, bool list_all, const struct config* config);
 
 /* Append task to the time sheet. If the task does not exist, create a new task
  * with the given estimates.*/
@@ -49,8 +49,8 @@ int predict(const char* filter, const struct config* config);
 int print_top_task(const struct config*);
 
 /* Load tasks into a buffer. */
-struct error load_tasks(const char* filter, const struct config* , struct task*
-    tasks, size_t max_task, size_t* task_count);
+struct error load_tasks(const char* filter, bool load_completed_tasks, const
+    struct config* , struct task* tasks, size_t max_task, size_t* task_count);
 
 /* Search for a task with the given name. */
 struct error scan_task(const char* task_name, const struct config* config,
@@ -68,14 +68,15 @@ void print_help(void) {
   puts("help                   - print this message");
   puts("add <task> <estimate>  - add a task"); 
   puts("config                 - print the configuration");
-  puts("do <task>              - start recording time for task");
+  puts("do <task> [estimate]   - start recording time for task");
   puts("predict [filter]       - predict completion time of tasks");
-  puts("list [filter]          - list tasks");
+  puts("list [--all] [filter]  - list tasks");
   puts("tick <task>            - mark task as completed");
   puts("top                    - print the current task");
 }
 
-int list_tasks(const char* const filter, const struct config* const config) {
+int list_tasks(const char* const filter, const bool list_all, const struct
+    config* const config) {
   assert(NULL != filter);
   assert(NULL != config);
   assert(NULL != config->base_path);
@@ -84,7 +85,7 @@ int list_tasks(const char* const filter, const struct config* const config) {
   struct task tasks[MAX_TASK];
   size_t task_count;
 
-  error = load_tasks(filter, config, tasks, MAX_TASK, &task_count);
+  error = load_tasks(filter, list_all, config, tasks, MAX_TASK, &task_count);
   if (ERROR_NONE != error.code) {
     print_error(&error);
     return 1;
@@ -98,8 +99,9 @@ int list_tasks(const char* const filter, const struct config* const config) {
   return 0;
 }
 
-struct error load_tasks(const char* const filter, const struct config* const
-    config, struct task* tasks, const size_t max_task, size_t* task_count) {
+struct error load_tasks(const char* const filter, const bool
+    load_completed_tasks, const struct config* const config, struct task*
+    tasks, const size_t max_task, size_t* task_count) {
   assert(NULL != filter);
   assert(NULL != tasks);
   assert(NULL != config);
@@ -135,6 +137,9 @@ struct error load_tasks(const char* const filter, const struct config* const
     }
     if (ERROR_NONE != error.code) {
       print_error(&error);
+      continue;
+    }
+    if (!load_completed_tasks && (STATUS_DONE == tasks[*task_count].status)) {
       continue;
     }
     if (string_matches(tasks[*task_count].name, &pattern)) {
@@ -372,7 +377,7 @@ int predict(const char* const filter, const struct config* const config) {
   struct task tasks[MAX_TASK];
   size_t task_count;
 
-  error = load_tasks(filter, config, tasks, MAX_TASK, &task_count);
+  error = load_tasks(filter, true, config, tasks, MAX_TASK, &task_count);
   if (ERROR_NONE != error.code) {
     print_error(&error);
     return 1;
@@ -470,12 +475,19 @@ int main(int argc, char** argv) {
     }
 
     if (COMMAND_LIST == command_type) {
+      bool list_all = false;
+      if (arg_num + 1 < argc) {
+        if (0 == strcmp("--all", argv[arg_num + 1])) {
+          list_all = true;
+        }
+        arg_num += 1;
+      }
       const char* filter = "";
       if (arg_num + 1 < argc) {
         arg_num += 1;
         filter = argv[arg_num];
       }
-      return list_tasks(filter, &config);
+      return list_tasks(filter, list_all, &config);
     }
 
     if (COMMAND_DO == command_type) {
